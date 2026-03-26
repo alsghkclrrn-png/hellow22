@@ -1,21 +1,15 @@
-
 class RecommendationCard extends HTMLElement {
     constructor() {
         super();
-        // Shadow DOM을 생성합니다.
         this.attachShadow({ mode: 'open' });
     }
 
     connectedCallback() {
-        // 컴포넌트가 DOM에 추가될 때 이 코드가 실행됩니다.
-        // 이제 속성 값에 안전하게 접근할 수 있습니다.
         const shadow = this.shadowRoot;
-
         const title = this.getAttribute('title');
         const description = this.getAttribute('description');
         const imgSrc = this.getAttribute('image-src');
 
-        // 스타일과 HTML 구조를 한 번에 설정합니다.
         shadow.innerHTML = `
             <style>
                 .recommendation-card {
@@ -65,15 +59,16 @@ class RecommendationCard extends HTMLElement {
     }
 }
 
-// 커스텀 엘리먼트를 정의합니다.
-customElements.define('recommendation-card', RecommendationCard);
+if (!customElements.get('recommendation-card')) {
+    customElements.define('recommendation-card', RecommendationCard);
+}
 
-// DOM이 로드되면 추천 카드를 생성합니다.
-document.addEventListener('DOMContentLoaded', () => {
+function initRecommendations() {
     const exerciseRecommendation = document.getElementById('exercise-recommendation');
     const foodRecommendation = document.getElementById('food-recommendation');
 
-    // 표시할 데이터입니다. 이미지 URL을 더 안정적인 소스로 변경했습니다.
+    if (!exerciseRecommendation || !foodRecommendation) return;
+
     const exerciseData = {
         title: '오피스 스트레칭',
         description: '의자에 앉아 간단히 따라 할 수 있는 스트레칭으로 거북목을 예방하고 피로를 풀어보세요.',
@@ -86,17 +81,27 @@ document.addEventListener('DOMContentLoaded', () => {
         imageSrc: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800'
     };
 
-    // 운동 추천 카드를 생성하고 추가합니다.
-    const exerciseCard = document.createElement('recommendation-card');
-    exerciseCard.setAttribute('title', exerciseData.title);
-    exerciseCard.setAttribute('description', exerciseData.description);
-    exerciseCard.setAttribute('image-src', exerciseData.imageSrc);
-    exerciseRecommendation.appendChild(exerciseCard);
+    // 중복 추가 방지
+    if (exerciseRecommendation.children.length === 0) {
+        const exerciseCard = document.createElement('recommendation-card');
+        exerciseCard.setAttribute('title', exerciseData.title);
+        exerciseCard.setAttribute('description', exerciseData.description);
+        exerciseCard.setAttribute('image-src', exerciseData.imageSrc);
+        exerciseRecommendation.appendChild(exerciseCard);
+    }
 
-    // 음식 추천 카드를 생성하고 추가합니다.
-    const foodCard = document.createElement('recommendation-card');
-    foodCard.setAttribute('title', foodData.title);
-    foodCard.setAttribute('description', foodData.description);
-    foodCard.setAttribute('image-src', foodData.imageSrc);
-    foodRecommendation.appendChild(foodCard);
-});
+    if (foodRecommendation.children.length === 0) {
+        const foodCard = document.createElement('recommendation-card');
+        foodCard.setAttribute('title', foodData.title);
+        foodCard.setAttribute('description', foodData.description);
+        foodCard.setAttribute('image-src', foodData.imageSrc);
+        foodRecommendation.appendChild(foodCard);
+    }
+}
+
+// 스크립트가 로드되는 즉시 실행 (module은 이미 지연 실행됨)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initRecommendations);
+} else {
+    initRecommendations();
+}
